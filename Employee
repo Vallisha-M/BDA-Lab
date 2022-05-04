@@ -1,0 +1,196 @@
+<pre>cqlsh:vallisha&gt; create table employee_info( emp_id int, emp_name text, designation text, date_of_joining date, salary int, dept_name text,primary key (emp_id,salary));
+cqlsh:vallisha&gt; begin batch insert into employee_info (emp_id, emp_name, designation, date_of_joining, salary, dept_name) values (121, &apos;Joseph&apos;, &apos;Senior Engineer&apos;, &apos;2020-12-02&apos;, 6500000, &apos;Operations&apos;); insert into employee_info (emp_id, emp_name, designation, date_of_joining, salary, dept_name) values (150, &apos;Raghav&apos;, &apos;Junior Engineer&apos;, &apos;2022-01-02&apos;, 1200000, &apos;R&amp;D&apos;); insert into employee_info (emp_id, emp_name, designation, date_of_joining, salary, dept_name) values (142, &apos;Abhishek&apos;, &apos;Project Manager&apos;, &apos;2021-06-03&apos;, 2400000, &apos;Sales&apos;); insert into employee_info (emp_id, emp_name, designation, date_of_joining, salary, dept_name) values (007, &apos;Yoshua&apos;, &apos;Senior Researcher&apos;, &apos;1999-08-04&apos;, 10000000, &apos;R&amp;D&apos;); insert into employee_info (emp_id, emp_name, designation, date_of_joining, salary, dept_name) values (162, &apos;Tim&apos;, &apos;Data Analyst&apos;, &apos;2021-06-05&apos;, 1000000, &apos;Marketing&apos;); apply batch;
+cqlsh:vallisha&gt; update employee_info set emp_name=&apos;John&apos;,dept_name=&apos;R&amp;D&apos; where emp_id=121;
+<font color="#CC0000"><b>InvalidRequest: Error from server: code=2200 [Invalid query] message=&quot;Some clustering keys are missing: salary&quot;</b></font>
+cqlsh:vallisha&gt; update employee_info set emp_name=&apos;John&apos;,dept_name=&apos;R&amp;D&apos; where emp_id=121 and salary=6500000;
+cqlsh:vallisha&gt; select * from employee_info where emp_id=121;
+
+ <font color="#CC0000"><b>emp_id</b></font> | <font color="#06989A"><b>salary</b></font>  | <font color="#75507B"><b>date_of_joining</b></font> | <font color="#75507B"><b>dept_name</b></font> | <font color="#75507B"><b>designation</b></font>     | <font color="#75507B"><b>emp_name</b></font>
+--------+---------+-----------------+-----------+-----------------+----------
+    <font color="#4E9A06"><b>121</b></font> | <font color="#4E9A06"><b>6500000</b></font> |      <font color="#4E9A06"><b>2020-12-02</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> | <font color="#C4A000"><b>Senior Engineer</b></font> |     <font color="#C4A000"><b>John</b></font>
+
+(1 rows)
+cqlsh:vallisha&gt; select * from employee_info order by salary;
+<font color="#CC0000"><b>InvalidRequest: Error from server: code=2200 [Invalid query] message=&quot;ORDER BY is only supported when the partition key is restricted by an EQ or an IN.&quot;</b></font>
+cqlsh:vallisha&gt; select * from employee_info where emp_id in (121,162,7,150,142) order by salary;
+<font color="#CC0000"><b>InvalidRequest: Error from server: code=2200 [Invalid query] message=&quot;Cannot page queries with both ORDER BY and a IN restriction on the partition key; you must either remove the ORDER BY or the IN and sort client side, or disable paging for this query&quot;</b></font>
+cqlsh:vallisha&gt; paging off
+Disabled Query paging.
+cqlsh:vallisha&gt; select * from employee_info where emp_id in (121,162,7,150,142) order by salary;
+
+ <font color="#CC0000"><b>emp_id</b></font> | <font color="#06989A"><b>salary</b></font>   | <font color="#75507B"><b>date_of_joining</b></font> | <font color="#75507B"><b>dept_name</b></font> | <font color="#75507B"><b>designation</b></font>       | <font color="#75507B"><b>emp_name</b></font>
+--------+----------+-----------------+-----------+-------------------+----------
+    <font color="#4E9A06"><b>162</b></font> |  <font color="#4E9A06"><b>1000000</b></font> |      <font color="#4E9A06"><b>2021-06-05</b></font> | <font color="#C4A000"><b>Marketing</b></font> |      <font color="#C4A000"><b>Data Analyst</b></font> |      <font color="#C4A000"><b>Tim</b></font>
+    <font color="#4E9A06"><b>150</b></font> |  <font color="#4E9A06"><b>1200000</b></font> |      <font color="#4E9A06"><b>2022-01-02</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> |   <font color="#C4A000"><b>Junior Engineer</b></font> |   <font color="#C4A000"><b>Raghav</b></font>
+    <font color="#4E9A06"><b>142</b></font> |  <font color="#4E9A06"><b>2400000</b></font> |      <font color="#4E9A06"><b>2021-06-03</b></font> |     <font color="#C4A000"><b>Sales</b></font> |   <font color="#C4A000"><b>Project Manager</b></font> | <font color="#C4A000"><b>Abhishek</b></font>
+    <font color="#4E9A06"><b>121</b></font> |  <font color="#4E9A06"><b>6500000</b></font> |      <font color="#4E9A06"><b>2020-12-02</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> |   <font color="#C4A000"><b>Senior Engineer</b></font> |     <font color="#C4A000"><b>John</b></font>
+      <font color="#4E9A06"><b>7</b></font> | <font color="#4E9A06"><b>10000000</b></font> |      <font color="#4E9A06"><b>1999-08-04</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> | <font color="#C4A000"><b>Senior Researcher</b></font> |   <font color="#C4A000"><b>Yoshua</b></font>
+
+(5 rows)
+cqlsh:vallisha&gt; select * from employee_info where emp_id in (select emp_id from employee) order by salary;
+<font color="#CC0000"><b>SyntaxException: line 1:45 mismatched input &apos;select&apos; expecting &apos;)&apos; (... employee_info where emp_id in ([select]...)</b></font>
+cqlsh:vallisha&gt; alter table employee_info add projects set&lt;text&gt;;
+cqlsh:vallisha&gt; update employee_info set projects={&apos;kubernetes&apos;,&apos;onboarding&apos;} where emp_id=121 and salary=10000000;
+cqlsh:vallisha&gt; select * from employee_info where emp_id in (select emp_id from employee) order by salary;
+<font color="#CC0000"><b>SyntaxException: line 1:45 mismatched input &apos;select&apos; expecting &apos;)&apos; (... employee_info where emp_id in ([select]...)</b></font>
+cqlsh:vallisha&gt; select * from employee_info where emp_id in (121,162,7,150,142) order by salary;
+
+ <font color="#CC0000"><b>emp_id</b></font> | <font color="#06989A"><b>salary</b></font>   | <font color="#75507B"><b>date_of_joining</b></font> | <font color="#75507B"><b>dept_name</b></font> | <font color="#75507B"><b>designation</b></font>       | <font color="#75507B"><b>emp_name</b></font> | <font color="#75507B"><b>projects</b></font>
+--------+----------+-----------------+-----------+-------------------+----------+------------------------------
+    <font color="#4E9A06"><b>162</b></font> |  <font color="#4E9A06"><b>1000000</b></font> |      <font color="#4E9A06"><b>2021-06-05</b></font> | <font color="#C4A000"><b>Marketing</b></font> |      <font color="#C4A000"><b>Data Analyst</b></font> |      <font color="#C4A000"><b>Tim</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>150</b></font> |  <font color="#4E9A06"><b>1200000</b></font> |      <font color="#4E9A06"><b>2022-01-02</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> |   <font color="#C4A000"><b>Junior Engineer</b></font> |   <font color="#C4A000"><b>Raghav</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>142</b></font> |  <font color="#4E9A06"><b>2400000</b></font> |      <font color="#4E9A06"><b>2021-06-03</b></font> |     <font color="#C4A000"><b>Sales</b></font> |   <font color="#C4A000"><b>Project Manager</b></font> | <font color="#C4A000"><b>Abhishek</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>121</b></font> |  <font color="#4E9A06"><b>6500000</b></font> |      <font color="#4E9A06"><b>2020-12-02</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> |   <font color="#C4A000"><b>Senior Engineer</b></font> |     <font color="#C4A000"><b>John</b></font> |                         <font color="#CC0000"><b>null</b></font>
+      <font color="#4E9A06"><b>7</b></font> | <font color="#4E9A06"><b>10000000</b></font> |      <font color="#4E9A06"><b>1999-08-04</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> | <font color="#C4A000"><b>Senior Researcher</b></font> |   <font color="#C4A000"><b>Yoshua</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>121</b></font> | <font color="#4E9A06"><b>10000000</b></font> |            <font color="#CC0000"><b>null</b></font> |      <font color="#CC0000"><b>null</b></font> |              <font color="#CC0000"><b>null</b></font> |     <font color="#CC0000"><b>null</b></font> | <font color="#3465A4"><b>{</b></font><font color="#C4A000"><b>&apos;kubernetes&apos;</b></font><font color="#3465A4"><b>, </b></font><font color="#C4A000"><b>&apos;onboarding&apos;</b></font><font color="#3465A4"><b>}</b></font>
+
+(6 rows)
+cqlsh:vallisha&gt; delete from employee_info where emp_id =121 and salaey=10000000;
+<font color="#CC0000"><b>InvalidRequest: Error from server: code=2200 [Invalid query] message=&quot;Undefined column name salaey&quot;</b></font>
+cqlsh:vallisha&gt; delete from employee_info where emp_id =121 and salary=10000000;
+cqlsh:vallisha&gt; select * from employee_info where emp_id in (121,162,7,150,142) order by salary;
+
+ <font color="#CC0000"><b>emp_id</b></font> | <font color="#06989A"><b>salary</b></font>   | <font color="#75507B"><b>date_of_joining</b></font> | <font color="#75507B"><b>dept_name</b></font> | <font color="#75507B"><b>designation</b></font>       | <font color="#75507B"><b>emp_name</b></font> | <font color="#75507B"><b>projects</b></font>
+--------+----------+-----------------+-----------+-------------------+----------+----------
+    <font color="#4E9A06"><b>162</b></font> |  <font color="#4E9A06"><b>1000000</b></font> |      <font color="#4E9A06"><b>2021-06-05</b></font> | <font color="#C4A000"><b>Marketing</b></font> |      <font color="#C4A000"><b>Data Analyst</b></font> |      <font color="#C4A000"><b>Tim</b></font> |     <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>150</b></font> |  <font color="#4E9A06"><b>1200000</b></font> |      <font color="#4E9A06"><b>2022-01-02</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> |   <font color="#C4A000"><b>Junior Engineer</b></font> |   <font color="#C4A000"><b>Raghav</b></font> |     <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>142</b></font> |  <font color="#4E9A06"><b>2400000</b></font> |      <font color="#4E9A06"><b>2021-06-03</b></font> |     <font color="#C4A000"><b>Sales</b></font> |   <font color="#C4A000"><b>Project Manager</b></font> | <font color="#C4A000"><b>Abhishek</b></font> |     <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>121</b></font> |  <font color="#4E9A06"><b>6500000</b></font> |      <font color="#4E9A06"><b>2020-12-02</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> |   <font color="#C4A000"><b>Senior Engineer</b></font> |     <font color="#C4A000"><b>John</b></font> |     <font color="#CC0000"><b>null</b></font>
+      <font color="#4E9A06"><b>7</b></font> | <font color="#4E9A06"><b>10000000</b></font> |      <font color="#4E9A06"><b>1999-08-04</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> | <font color="#C4A000"><b>Senior Researcher</b></font> |   <font color="#C4A000"><b>Yoshua</b></font> |     <font color="#CC0000"><b>null</b></font>
+
+(5 rows)
+cqlsh:vallisha&gt; update employee_info set projects={&apos;kubernetes&apos;,&apos;onboarding&apos;} where emp_id=121 and salary=1000000;
+cqlsh:vallisha&gt; select * from employee_info where emp_id in (121,162,7,150,142) order by salary;
+
+ <font color="#CC0000"><b>emp_id</b></font> | <font color="#06989A"><b>salary</b></font>   | <font color="#75507B"><b>date_of_joining</b></font> | <font color="#75507B"><b>dept_name</b></font> | <font color="#75507B"><b>designation</b></font>       | <font color="#75507B"><b>emp_name</b></font> | <font color="#75507B"><b>projects</b></font>
+--------+----------+-----------------+-----------+-------------------+----------+------------------------------
+    <font color="#4E9A06"><b>121</b></font> |  <font color="#4E9A06"><b>1000000</b></font> |            <font color="#CC0000"><b>null</b></font> |      <font color="#CC0000"><b>null</b></font> |              <font color="#CC0000"><b>null</b></font> |     <font color="#CC0000"><b>null</b></font> | <font color="#3465A4"><b>{</b></font><font color="#C4A000"><b>&apos;kubernetes&apos;</b></font><font color="#3465A4"><b>, </b></font><font color="#C4A000"><b>&apos;onboarding&apos;</b></font><font color="#3465A4"><b>}</b></font>
+    <font color="#4E9A06"><b>162</b></font> |  <font color="#4E9A06"><b>1000000</b></font> |      <font color="#4E9A06"><b>2021-06-05</b></font> | <font color="#C4A000"><b>Marketing</b></font> |      <font color="#C4A000"><b>Data Analyst</b></font> |      <font color="#C4A000"><b>Tim</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>150</b></font> |  <font color="#4E9A06"><b>1200000</b></font> |      <font color="#4E9A06"><b>2022-01-02</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> |   <font color="#C4A000"><b>Junior Engineer</b></font> |   <font color="#C4A000"><b>Raghav</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>142</b></font> |  <font color="#4E9A06"><b>2400000</b></font> |      <font color="#4E9A06"><b>2021-06-03</b></font> |     <font color="#C4A000"><b>Sales</b></font> |   <font color="#C4A000"><b>Project Manager</b></font> | <font color="#C4A000"><b>Abhishek</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>121</b></font> |  <font color="#4E9A06"><b>6500000</b></font> |      <font color="#4E9A06"><b>2020-12-02</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> |   <font color="#C4A000"><b>Senior Engineer</b></font> |     <font color="#C4A000"><b>John</b></font> |                         <font color="#CC0000"><b>null</b></font>
+      <font color="#4E9A06"><b>7</b></font> | <font color="#4E9A06"><b>10000000</b></font> |      <font color="#4E9A06"><b>1999-08-04</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> | <font color="#C4A000"><b>Senior Researcher</b></font> |   <font color="#C4A000"><b>Yoshua</b></font> |                         <font color="#CC0000"><b>null</b></font>
+
+(6 rows)
+cqlsh:vallisha&gt; select * from employee_info where emp_id=121 and salary=1000000;
+
+ <font color="#CC0000"><b>emp_id</b></font> | <font color="#06989A"><b>salary</b></font>  | <font color="#75507B"><b>date_of_joining</b></font> | <font color="#75507B"><b>dept_name</b></font> | <font color="#75507B"><b>designation</b></font> | <font color="#75507B"><b>emp_name</b></font> | <font color="#75507B"><b>projects</b></font>
+--------+---------+-----------------+-----------+-------------+----------+------------------------------
+    <font color="#4E9A06"><b>121</b></font> | <font color="#4E9A06"><b>1000000</b></font> |            <font color="#CC0000"><b>null</b></font> |      <font color="#CC0000"><b>null</b></font> |        <font color="#CC0000"><b>null</b></font> |     <font color="#CC0000"><b>null</b></font> | <font color="#3465A4"><b>{</b></font><font color="#C4A000"><b>&apos;kubernetes&apos;</b></font><font color="#3465A4"><b>, </b></font><font color="#C4A000"><b>&apos;onboarding&apos;</b></font><font color="#3465A4"><b>}</b></font>
+
+(1 rows)
+cqlsh:vallisha&gt; select projects from employee_info where emp_id=121 and salary=1000000;
+
+ <font color="#75507B"><b>projects</b></font>
+------------------------------
+ <font color="#3465A4"><b>{</b></font><font color="#C4A000"><b>&apos;kubernetes&apos;</b></font><font color="#3465A4"><b>, </b></font><font color="#C4A000"><b>&apos;onboarding&apos;</b></font><font color="#3465A4"><b>}</b></font>
+
+(1 rows)
+cqlsh:vallisha&gt; begin batch
+            ... insert into employee_info (emp_id, emp_name, designation, date_of_joining, salary, dept_name) values (122, &apos;James&apos;, &apos;Data Sciantist&apos;, &apos;2019-06-06&apos;, 2000000, &apos;Research&apos;) using ttl=15; apply batch;
+<font color="#CC0000"><b>SyntaxException: line 2:178 no viable alternative at input &apos;=&apos; (... 2000000, &apos;Research&apos;) using ttl[=]...)</b></font>
+cqlsh:vallisha&gt; begin batch insert into employee_info (emp_id, emp_name, designation, date_of_joining, salary, dept_name) values (122, &apos;James&apos;, &apos;Data Sciantist&apos;, &apos;2019-06-06&apos;, 2000000, &apos;Research&apos;) using ttl 15; apply batch;
+cqlsh:vallisha&gt; select * from employee_info;
+
+ <font color="#CC0000"><b>emp_id</b></font> | <font color="#06989A"><b>salary</b></font>   | <font color="#75507B"><b>date_of_joining</b></font> | <font color="#75507B"><b>dept_name</b></font> | <font color="#75507B"><b>designation</b></font>       | <font color="#75507B"><b>emp_name</b></font> | <font color="#75507B"><b>projects</b></font>
+--------+----------+-----------------+-----------+-------------------+----------+------------------------------
+    <font color="#4E9A06"><b>122</b></font> |  <font color="#4E9A06"><b>2000000</b></font> |      <font color="#4E9A06"><b>2019-06-06</b></font> |  <font color="#C4A000"><b>Research</b></font> |    <font color="#C4A000"><b>Data Sciantist</b></font> |    <font color="#C4A000"><b>James</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>121</b></font> |  <font color="#4E9A06"><b>1000000</b></font> |            <font color="#CC0000"><b>null</b></font> |      <font color="#CC0000"><b>null</b></font> |              <font color="#CC0000"><b>null</b></font> |     <font color="#CC0000"><b>null</b></font> | <font color="#3465A4"><b>{</b></font><font color="#C4A000"><b>&apos;kubernetes&apos;</b></font><font color="#3465A4"><b>, </b></font><font color="#C4A000"><b>&apos;onboarding&apos;</b></font><font color="#3465A4"><b>}</b></font>
+    <font color="#4E9A06"><b>121</b></font> |  <font color="#4E9A06"><b>6500000</b></font> |      <font color="#4E9A06"><b>2020-12-02</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> |   <font color="#C4A000"><b>Senior Engineer</b></font> |     <font color="#C4A000"><b>John</b></font> |                         <font color="#CC0000"><b>null</b></font>
+      <font color="#4E9A06"><b>7</b></font> | <font color="#4E9A06"><b>10000000</b></font> |      <font color="#4E9A06"><b>1999-08-04</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> | <font color="#C4A000"><b>Senior Researcher</b></font> |   <font color="#C4A000"><b>Yoshua</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>150</b></font> |  <font color="#4E9A06"><b>1200000</b></font> |      <font color="#4E9A06"><b>2022-01-02</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> |   <font color="#C4A000"><b>Junior Engineer</b></font> |   <font color="#C4A000"><b>Raghav</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>142</b></font> |  <font color="#4E9A06"><b>2400000</b></font> |      <font color="#4E9A06"><b>2021-06-03</b></font> |     <font color="#C4A000"><b>Sales</b></font> |   <font color="#C4A000"><b>Project Manager</b></font> | <font color="#C4A000"><b>Abhishek</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>162</b></font> |  <font color="#4E9A06"><b>1000000</b></font> |      <font color="#4E9A06"><b>2021-06-05</b></font> | <font color="#C4A000"><b>Marketing</b></font> |      <font color="#C4A000"><b>Data Analyst</b></font> |      <font color="#C4A000"><b>Tim</b></font> |                         <font color="#CC0000"><b>null</b></font>
+
+(7 rows)
+cqlsh:vallisha&gt; select * from employee_info;
+
+ <font color="#CC0000"><b>emp_id</b></font> | <font color="#06989A"><b>salary</b></font>   | <font color="#75507B"><b>date_of_joining</b></font> | <font color="#75507B"><b>dept_name</b></font> | <font color="#75507B"><b>designation</b></font>       | <font color="#75507B"><b>emp_name</b></font> | <font color="#75507B"><b>projects</b></font>
+--------+----------+-----------------+-----------+-------------------+----------+------------------------------
+    <font color="#4E9A06"><b>121</b></font> |  <font color="#4E9A06"><b>1000000</b></font> |            <font color="#CC0000"><b>null</b></font> |      <font color="#CC0000"><b>null</b></font> |              <font color="#CC0000"><b>null</b></font> |     <font color="#CC0000"><b>null</b></font> | <font color="#3465A4"><b>{</b></font><font color="#C4A000"><b>&apos;kubernetes&apos;</b></font><font color="#3465A4"><b>, </b></font><font color="#C4A000"><b>&apos;onboarding&apos;</b></font><font color="#3465A4"><b>}</b></font>
+    <font color="#4E9A06"><b>121</b></font> |  <font color="#4E9A06"><b>6500000</b></font> |      <font color="#4E9A06"><b>2020-12-02</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> |   <font color="#C4A000"><b>Senior Engineer</b></font> |     <font color="#C4A000"><b>John</b></font> |                         <font color="#CC0000"><b>null</b></font>
+      <font color="#4E9A06"><b>7</b></font> | <font color="#4E9A06"><b>10000000</b></font> |      <font color="#4E9A06"><b>1999-08-04</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> | <font color="#C4A000"><b>Senior Researcher</b></font> |   <font color="#C4A000"><b>Yoshua</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>150</b></font> |  <font color="#4E9A06"><b>1200000</b></font> |      <font color="#4E9A06"><b>2022-01-02</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> |   <font color="#C4A000"><b>Junior Engineer</b></font> |   <font color="#C4A000"><b>Raghav</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>142</b></font> |  <font color="#4E9A06"><b>2400000</b></font> |      <font color="#4E9A06"><b>2021-06-03</b></font> |     <font color="#C4A000"><b>Sales</b></font> |   <font color="#C4A000"><b>Project Manager</b></font> | <font color="#C4A000"><b>Abhishek</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>162</b></font> |  <font color="#4E9A06"><b>1000000</b></font> |      <font color="#4E9A06"><b>2021-06-05</b></font> | <font color="#C4A000"><b>Marketing</b></font> |      <font color="#C4A000"><b>Data Analyst</b></font> |      <font color="#C4A000"><b>Tim</b></font> |                         <font color="#CC0000"><b>null</b></font>
+
+(6 rows)
+cqlsh:vallisha&gt; delete from employee_info where emp_id=121 and salary=1000000;
+cqlsh:vallisha&gt; update employee_info set projects={&apos;kubernetes&apos;,&apos;onboarding&apos;} where emp_id=121 and salary=6500000;
+cqlsh:vallisha&gt; select * from employee_info;
+
+ <font color="#CC0000"><b>emp_id</b></font> | <font color="#06989A"><b>salary</b></font>   | <font color="#75507B"><b>date_of_joining</b></font> | <font color="#75507B"><b>dept_name</b></font> | <font color="#75507B"><b>designation</b></font>       | <font color="#75507B"><b>emp_name</b></font> | <font color="#75507B"><b>projects</b></font>
+--------+----------+-----------------+-----------+-------------------+----------+------------------------------
+    <font color="#4E9A06"><b>121</b></font> |  <font color="#4E9A06"><b>6500000</b></font> |      <font color="#4E9A06"><b>2020-12-02</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> |   <font color="#C4A000"><b>Senior Engineer</b></font> |     <font color="#C4A000"><b>John</b></font> | <font color="#3465A4"><b>{</b></font><font color="#C4A000"><b>&apos;kubernetes&apos;</b></font><font color="#3465A4"><b>, </b></font><font color="#C4A000"><b>&apos;onboarding&apos;</b></font><font color="#3465A4"><b>}</b></font>
+      <font color="#4E9A06"><b>7</b></font> | <font color="#4E9A06"><b>10000000</b></font> |      <font color="#4E9A06"><b>1999-08-04</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> | <font color="#C4A000"><b>Senior Researcher</b></font> |   <font color="#C4A000"><b>Yoshua</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>150</b></font> |  <font color="#4E9A06"><b>1200000</b></font> |      <font color="#4E9A06"><b>2022-01-02</b></font> |       <font color="#C4A000"><b>R&amp;D</b></font> |   <font color="#C4A000"><b>Junior Engineer</b></font> |   <font color="#C4A000"><b>Raghav</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>142</b></font> |  <font color="#4E9A06"><b>2400000</b></font> |      <font color="#4E9A06"><b>2021-06-03</b></font> |     <font color="#C4A000"><b>Sales</b></font> |   <font color="#C4A000"><b>Project Manager</b></font> | <font color="#C4A000"><b>Abhishek</b></font> |                         <font color="#CC0000"><b>null</b></font>
+    <font color="#4E9A06"><b>162</b></font> |  <font color="#4E9A06"><b>1000000</b></font> |      <font color="#4E9A06"><b>2021-06-05</b></font> | <font color="#C4A000"><b>Marketing</b></font> |      <font color="#C4A000"><b>Data Analyst</b></font> |      <font color="#C4A000"><b>Tim</b></font> |                         <font color="#CC0000"><b>null</b></font>
+
+(5 rows)
+cqlsh:vallisha&gt; qlsh:vallisha&gt; delete from employee_info where emp_id=121 and salary=1000000;
+<font color="#CC0000"><b>SyntaxException: line 1:0 no viable alternative at input &apos;qlsh&apos; ([qlsh]...)</b></font>
+cqlsh:vallisha&gt; cqlsh:vallisha&gt; update employee_info set projects={&apos;kubernetes&apos;,&apos;onboarding&apos;} where emp_id=121 and salary=6500000;
+<font color="#CC0000"><b>SyntaxException: line 1:0 no viable alternative at input &apos;cqlsh&apos; ([cqlsh]...)</b></font>
+cqlsh:vallisha&gt; cqlsh:vallisha&gt; select * from employee_info;
+<font color="#CC0000"><b>SyntaxException: line 1:0 no viable alternative at input &apos;cqlsh&apos; ([cqlsh]...)</b></font>
+cqlsh:vallisha&gt; 
+cqlsh:vallisha&gt;  emp_id | salary   | date_of_joining | dept_name | designation       | emp_name | projects
+<font color="#CC0000"><b>Invalid syntax at line 1, char 9</b></font>
+<font color="#CC0000"><b>   emp_id | salary   | date_of_joining | dept_name | designation       | emp_name | projects</b></font>
+<font color="#CC0000"><b>          ^</b></font>
+cqlsh:vallisha&gt; --------+----------+-----------------+-----------+-------------------+----------+------------------------------
+cqlsh:vallisha&gt;     121 |  6500000 |      2020-12-02 |       R&amp;D |   Senior Engineer |     John | {&apos;kubernetes&apos;, &apos;onboarding&apos;}
+<font color="#CC0000"><b>Invalid syntax at line 1, char 9</b></font>
+<font color="#CC0000"><b>      121 |  6500000 |      2020-12-02 |       R&amp;D |   Senior Engineer |     John | {&apos;kubernetes&apos;, &apos;onboarding&apos;}</b></font>
+<font color="#CC0000"><b>          ^</b></font>
+cqlsh:vallisha&gt;       7 | 10000000 |      1999-08-04 |       R&amp;D | Senior Researcher |   Yoshua |                         null
+<font color="#CC0000"><b>Invalid syntax at line 1, char 9</b></font>
+<font color="#CC0000"><b>        7 | 10000000 |      1999-08-04 |       R&amp;D | Senior Researcher |   Yoshua |                         null</b></font>
+<font color="#CC0000"><b>          ^</b></font>
+cqlsh:vallisha&gt;     150 |  1200000 |      2022-01-02 |       R&amp;D |   Junior Engineer |   Raghav |                         null
+<font color="#CC0000"><b>Invalid syntax at line 1, char 9</b></font>
+<font color="#CC0000"><b>      150 |  1200000 |      2022-01-02 |       R&amp;D |   Junior Engineer |   Raghav |                         null</b></font>
+<font color="#CC0000"><b>          ^</b></font>
+cqlsh:vallisha&gt;     142 |  2400000 |      2021-06-03 |     Sales |   Project Manager | Abhishek |                         null
+<font color="#CC0000"><b>Invalid syntax at line 1, char 9</b></font>
+<font color="#CC0000"><b>      142 |  2400000 |      2021-06-03 |     Sales |   Project Manager | Abhishek |                         null</b></font>
+<font color="#CC0000"><b>          ^</b></font>
+cqlsh:vallisha&gt;     162 |  1000000 |      2021-06-05 | Marketing |      Data Analyst |      Tim |                         null
+<font color="#CC0000"><b>Invalid syntax at line 1, char 9</b></font>
+<font color="#CC0000"><b>      162 |  1000000 |      2021-06-05 | Marketing |      Data Analyst |      Tim |                         null</b></font>
+<font color="#CC0000"><b>          ^</b></font>
+cqlsh:vallisha&gt; 
+cqlsh:vallisha&gt; qlsh:vallisha&gt; delete from employee_info where emp_id=121 and salary=1000000;
+<font color="#CC0000"><b>SyntaxException: line 1:0 no viable alternative at input &apos;qlsh&apos; ([qlsh]...)</b></font>
+cqlsh:vallisha&gt; cqlsh:vallisha&gt; update employee_info set projects={&apos;kubernetes&apos;,&apos;onboarding&apos;} where emp_id=121 and salary=6500000;
+<font color="#CC0000"><b>SyntaxException: line 1:0 no viable alternative at input &apos;cqlsh&apos; ([cqlsh]...)</b></font>
+cqlsh:vallisha&gt; cqlsh:vallisha&gt; select * from employee_info;
+<font color="#CC0000"><b>SyntaxException: line 1:0 no viable alternative at input &apos;cqlsh&apos; ([cqlsh]...)</b></font>
+cqlsh:vallisha&gt; 
+cqlsh:vallisha&gt;  emp_id | salary   | date_of_joining | dept_name | designation       | emp_name | projects
+<font color="#CC0000"><b>Invalid syntax at line 1, char 9</b></font>
+<font color="#CC0000"><b>   emp_id | salary   | date_of_joining | dept_name | designation       | emp_name | projects</b></font>
+<font color="#CC0000"><b>          ^</b></font>
+cqlsh:vallisha&gt; --------+----------+-----------------+-----------+-------------------+----------+------------------------------
+cqlsh:vallisha&gt;     121 |  6500000 |      2020-12-02 |       R&amp;D |   Senior Engineer |     John | {&apos;kubernetes&apos;, &apos;onboarding&apos;}
+<font color="#CC0000"><b>Invalid syntax at line 1, char 9</b></font>
+<font color="#CC0000"><b>      121 |  6500000 |      2020-12-02 |       R&amp;D |   Senior Engineer |     John | {&apos;kubernetes&apos;, &apos;onboarding&apos;}</b></font>
+<font color="#CC0000"><b>          ^</b></font>
+cqlsh:vallisha&gt;       7 | 10000000 |      1999-08-04 |       R&amp;D | Senior Researcher |   Yoshua |                         null
+<font color="#CC0000"><b>Invalid syntax at line 1, char 9</b></font>
+<font color="#CC0000"><b>        7 | 10000000 |      1999-08-04 |       R&amp;D | Senior Researcher |   Yoshua |                         null</b></font>
+<font color="#CC0000"><b>          ^</b></font>
+cqlsh:vallisha&gt;     150 |  1200000 |      2022-01-02 |       R&amp;D |   Junior Engineer |   Raghav |                         null
+<font color="#CC0000"><b>Invalid syntax at line 1, char 9</b></font>
+<font color="#CC0000"><b>      150 |  1200000 |      2022-01-02 |       R&amp;D |   Junior Engineer |   Raghav |                         null</b></font>
+<font color="#CC0000"><b>          ^</b></font>
+cqlsh:vallisha&gt;     142 |  2400000 |      2021-06-03 |     Sales |   Project Manager | Abhishek |                         null
+<font color="#CC0000"><b>Invalid syntax at line 1, char 9</b></font>
+<font color="#CC0000"><b>      142 |  2400000 |      2021-06-03 |     Sales |   Project Manager | Abhishek |                         null</b></font>
+<font color="#CC0000"><b>          ^</b></font>
+cqlsh:vallisha&gt;     162 |  1000000 |      2021-06-05 | Marketing |      Data Analyst |      Tim |                         null
+<font color="#CC0000"><b>Invalid syntax at line 1, char 9</b></font>
+<font color="#CC0000"><b>      162 |  1000000 |      2021-06-05 | Marketing |      Data Analyst |      Tim |                         null</b></font>
+<font color="#CC0000"><b>          ^</b></font>
+</pre>
