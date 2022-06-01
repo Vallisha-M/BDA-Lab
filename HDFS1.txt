@@ -1,0 +1,81 @@
+hduser@bmsce-Precision-T1700:~$ start-all.sh
+This script is Deprecated. Instead use start-dfs.sh and start-yarn.sh
+Starting namenodes on [localhost]
+hduser@localhost's password: 
+localhost: starting namenode, logging to /usr/local/hadoop/logs/hadoop-hduser-namenode-bmsce-Precision-T1700.out
+hduser@localhost's password: 
+localhost: starting datanode, logging to /usr/local/hadoop/logs/hadoop-hduser-datanode-bmsce-Precision-T1700.out
+Starting secondary namenodes [0.0.0.0]
+hduser@0.0.0.0's password: 
+0.0.0.0: starting secondarynamenode, logging to /usr/local/hadoop/logs/hadoop-hduser-secondarynamenode-bmsce-Precision-T1700.out
+starting yarn daemons
+starting resourcemanager, logging to /usr/local/hadoop/logs/yarn-hduser-resourcemanager-bmsce-Precision-T1700.out
+hduser@localhost's password: 
+localhost: starting nodemanager, logging to /usr/local/hadoop/logs/yarn-hduser-nodemanager-bmsce-Precision-T1700.out
+hduser@bmsce-Precision-T1700:~$ jps
+6912 Jps
+6789 NodeManager
+6086 DataNode
+6457 ResourceManager
+6298 SecondaryNameNode
+5916 NameNode
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -mkdir /vallisha
+hduser@bmsce-Precision-T1700:~$ hadoop fs -la /
+-la: Unknown command
+hduser@bmsce-Precision-T1700:~$ hadoop fs -ls /
+Found 3 items
+drwxr-xr-x   - hduser supergroup          0 2022-05-31 11:08 /u1
+-rw-r--r--   1 hduser supergroup         19 2022-05-31 11:01 /user
+drwxr-xr-x   - hduser supergroup          0 2022-06-01 09:32 /vallisha
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -put /home/hduser/Documents/1bm19cs177 /vallisha/sample.txt
+hduser@bmsce-Precision-T1700:~$ hadoop fs -ls /vallisha
+Found 1 items
+drwxr-xr-x   - hduser supergroup          0 2022-06-01 09:35 /vallisha/sample.txt
+hduser@bmsce-Precision-T1700:~$ hadoop fs -cat /vallisha/sample.txt
+cat: `/vallisha/sample.txt': Is a directory
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -cat /vallisha/sample.txt
+cat: `/vallisha/sample.txt': Is a directory
+hduser@bmsce-Precision-T1700:~$ hadoop fs -rm -r -f /vallisha/sample.txt
+22/06/01 09:40:55 INFO fs.TrashPolicyDefault: Namenode trash configuration: Deletion interval = 0 minutes, Emptier interval = 0 minutes.
+Deleted /vallisha/sample.txt
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -put /home/hduser/Documents/1bm19cs177/sample.txt /vallisha/sample.txt
+hduser@bmsce-Precision-T1700:~$ hadoop fs -ls /vallisha
+Found 1 items
+-rw-r--r--   1 hduser supergroup         12 2022-06-01 09:41 /vallisha/sample.txt
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -cat /vallisha/sample.txt
+sample text
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -copyFromLocal /home/hduser/Documents/1bm19cs177/sample1.txt /vallisha/sample1.txt
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -cat /vallisha/sample1.txt
+sample1 text
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -getmerge /vallisha/sample.txt /vallisha/sample1.txt /home/hduser/Documents/1bm19cs177/Merge.txt
+hduser@bmsce-Precision-T1700:~$ cat /home/hduser/Documents/1bm19cs177/Merge.txt
+sample text
+sample1 text
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -copyTolocal /vallisha/sample.txt /home/hduser/Documents/1bm19cs177/sample_copy.txt
+-copyTolocal: Unknown command
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -copyToLocal /vallisha/sample.txt /home/hduser/Documents/1bm19cs177/sample_copy.txt
+hduser@bmsce-Precision-T1700:~$ cat /home/hduser/Documents/1bm19cs177/sample_copy.txt
+sample text
+hduser@bmsce-Precision-T1700:~$ hadoop fs -ls /u1
+Found 1 items
+-rw-r--r--   1 hduser supergroup         19 2022-05-31 11:08 /u1/ggg
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -cat /u1/ggg
+asdad sdafsdaf sds
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -mv /vallisha/sample.txt /u1/sample.txt
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -ls /vallisha
+Found 1 items
+-rw-r--r--   1 hduser supergroup         13 2022-06-01 09:52 /vallisha/sample1.txt
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -ls /u1
+Found 2 items
+-rw-r--r--   1 hduser supergroup         19 2022-05-31 11:08 /u1/ggg
+-rw-r--r--   1 hduser supergroup         12 2022-06-01 09:41 /u1/sample.txt
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -cp /vallisha/sample1.txt /u1/sample1.txt
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -ls /vallisha
+Found 1 items
+-rw-r--r--   1 hduser supergroup         13 2022-06-01 09:52 /vallisha/sample1.txt
+hduser@bmsce-Precision-T1700:~$ hdfs dfs -ls /u1
+Found 3 items
+-rw-r--r--   1 hduser supergroup         19 2022-05-31 11:08 /u1/ggg
+-rw-r--r--   1 hduser supergroup         12 2022-06-01 09:41 /u1/sample.txt
+-rw-r--r--   1 hduser supergroup         13 2022-06-01 10:09 /u1/sample1.txt
+hduser@bmsce-Precision-T1700:~$ 
